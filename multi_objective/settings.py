@@ -67,16 +67,16 @@ celeba = dict(
     # task_ids=[26, 22, 24, 26],                            # 4 objectives
     # task_ids=[random.randint(0, 39) for _ in range(10)],  # 10 random tasks
     objectives=['BinaryCrossEntropyLoss' for _ in range(10)],
-    n_test_rays=1,
+    n_test_rays=25,
     epochs=20,
     use_scheduler=False,
     train_eval_every=0,     # do it in parallel manually
-    eval_every=0,           #
+    eval_every=2,           #
     model_name='resnet18',   # we also experimented with 'resnet-18', try it.
     lr=0.0005,
     lamda=3,
     alpha=1,
-    checkpoint_every=1,
+    checkpoint_every=2,
     batch_size=32,
 )
 

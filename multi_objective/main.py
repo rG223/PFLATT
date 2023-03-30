@@ -118,7 +118,6 @@ def main(settings):
     print("start processig with settings", settings)
     utils.set_seed(settings['seed'])
     global elapsed_time
-    global preference
 
     # create the experiment folders
     logdir = os.path.join(settings['logdir'], settings['method'], settings['dataset'], utils.get_runname(settings))

@@ -28,14 +28,14 @@ class scSE(nn.Module):
                                          bias=False)
         self.norm_c = nn.Sigmoid()
         self.ray_mlp = nn.Sequential(
-            nn.Linear(2, 30),
+            nn.Linear(2, in_channels),
             nn.ReLU(inplace=True),
-            nn.Linear(30, 30),
+            nn.Linear(in_channels, in_channels),
             nn.ReLU(inplace=True),
-            nn.Linear(30, 30)
+            nn.Linear(in_channels, in_channels)
         )
-        setattr(self, f"channel_attention", nn.Linear(30, in_channels))
-        setattr(self, f"sptial_attention", nn.Linear(30, h*h))
+        setattr(self, f"channel_attention", nn.Linear(in_channels, in_channels))
+        setattr(self, f"sptial_attention", nn.Linear(in_channels, h*h))
 
     def preference(self, preference_vector):
         self.pre = preference_vector

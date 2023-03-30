@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 from utils import num_parameters, model_from_dataset, circle_points
 from ..base import BaseMethod
-
+import multi_objective.globalvar as gl
 
 class Upsampler(nn.Module):
 
@@ -158,7 +158,7 @@ class AttentionMethod(BaseMethod):
 
         model = model_from_dataset(method='preatt', dim=dim, **kwargs)
         self.model = model.cuda()
-
+        gl._init()
         self.n_params = num_parameters(self.model)
         print("Number of parameters: {}".format(self.n_params))
 
@@ -178,7 +178,8 @@ class AttentionMethod(BaseMethod):
         # step 2: calculate loss
         self.model.zero_grad()
         preference = batch['alpha']
-        logits = self.model(batch, preference)
+        gl.set_value('preference', preference)
+        logits = self.model(batch)
         batch.update(logits)
         loss_total = None
         task_losses = []
@@ -205,7 +206,9 @@ class AttentionMethod(BaseMethod):
                 ray /= ray.sum()
 
                 batch['alpha'] = ray
-                logits.append(self.model(batch, batch['alpha']))
+                # logits.append(self.model(batch, batch['alpha']))
+                gl.set_value('preference', ray)
+                logits.append(self.model(batch))
         return logits
 
 

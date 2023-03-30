@@ -5,7 +5,8 @@ import torch.nn as nn
 from .utils import load_state_dict_from_url
 from typing import Type, Any, Callable, Union, List, Optional
 from .attention import scSE
-
+sys.path.append('D:\pyprojects\PFL2')
+import multi_objective.globalvar as gl
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
@@ -121,7 +122,7 @@ class BasicBlock_attention(nn.Module):
         self.scse = scSE(in_channels=planes, mode=['cSE', 'sSE'], h=layer)
 
     def forward(self, x: Tensor) -> Tensor:
-        self.scse.preference(variable.get_value('preference'))
+        self.scse.preference(gl.get_value('preference'))
         identity = x
         out = self.conv1(x)
         out = self.bn1(out)
@@ -290,7 +291,6 @@ class ResNet(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
-
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
@@ -328,7 +328,7 @@ class ResNet_attention(nn.Module):
 
         self.inplanes = 64
         self.dilation = 1
-
+        self.task_ids = [16, 22]
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
             # the 2x2 stride with a dilated convolution instead
@@ -395,8 +395,7 @@ class ResNet_attention(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward_impl(self, x: Tensor, preference) -> Tensor:
-        preference
+    def _forward_impl(self, x: Tensor) -> Tensor:
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -412,8 +411,8 @@ class ResNet_attention(nn.Module):
 
         return x
 
-    def forward(self, x: Tensor, preference) -> Tensor:
-        return self._forward_impl(x, preference)
+    def forward(self, x: Tensor) -> Tensor:
+        return self._forward_impl(x)
 
 def _resnet(
     arch: str,
@@ -428,6 +427,7 @@ def _resnet(
         state_dict = load_state_dict_from_url(model_urls[arch],
                                               progress=progress)
         model.load_state_dict(state_dict)
+
     return model
 
 
