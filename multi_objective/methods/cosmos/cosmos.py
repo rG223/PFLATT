@@ -231,7 +231,7 @@ class YOTOMethod(BaseMethod):
         self.alpha = alpha
         self.n_test_rays = n_test_rays
         self.lamda = lamda
-
+        gl._init()
         dim = list(dim)
         dim[0] = dim[0]
 
@@ -256,7 +256,8 @@ class YOTOMethod(BaseMethod):
 
         # step 2: calculate loss
         self.model.zero_grad()
-        logits = self.model(batch, batch['alpha'])
+        gl.set_value('preference', batch['alpha'])
+        logits = self.model(batch)
         batch.update(logits)
         loss_total = None
         task_losses = []
@@ -283,6 +284,7 @@ class YOTOMethod(BaseMethod):
                 ray /= ray.sum()
 
                 batch['alpha'] = ray
-                logits.append(self.model(batch, batch['alpha']))
+                gl.set_value('preference', ray)
+                logits.append(self.model(batch))
         return logits
 

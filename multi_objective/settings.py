@@ -77,7 +77,7 @@ celeba = dict(
     lamda=3,
     alpha=1,
     checkpoint_every=2,
-    batch_size=32,
+    batch_size=256,
 )
 
 #
@@ -179,7 +179,7 @@ generic = dict(
 
     # Training parameters
     lr=1e-3,
-    batch_size=32,
+    batch_size=128,
     epochs=100,
 
     # Reference point for hyper-volume calculation

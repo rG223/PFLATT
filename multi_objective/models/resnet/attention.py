@@ -26,35 +26,36 @@ class scSE(nn.Module):
                                          in_channels,
                                          kernel_size=1,
                                          bias=False)
+        self.Relu = nn.ReLU(inplace=True)
         self.norm_c = nn.Sigmoid()
         self.ray_mlp = nn.Sequential(
-            nn.Linear(2, in_channels),
+            nn.Linear(2, 30),
             nn.ReLU(inplace=True),
-            nn.Linear(in_channels, in_channels),
+            nn.Linear(30, 30),
             nn.ReLU(inplace=True),
-            nn.Linear(in_channels, in_channels)
+            nn.Linear(30, 30)
         )
-        setattr(self, f"channel_attention", nn.Linear(in_channels, in_channels))
-        setattr(self, f"sptial_attention", nn.Linear(in_channels, h*h))
+        setattr(self, f"channel_attention", nn.Linear(30, in_channels))
+        setattr(self, f"sptial_attention", nn.Linear(30, h*h))
 
     def preference(self, preference_vector):
         self.pre = preference_vector
 
     def forward(self, U):
-
         v = self.ray_mlp(self.pre)
-        z = self.avgpool(U)  # shape: [bs, c, h, w] to [bs, c, 1, 1]
-        z = self.Conv_Squeeze(z)  # shape: [bs, c/2, 1, 1]
-        z = self.Conv_Excitation(z)  # shape: [bs, c, 1, 1]
         if 'cSE' in self.mode:
+            # z = self.avgpool(U)  # shape: [bs, c, h, w] to [bs, c, 1, 1]
+            # z = self.Conv_Squeeze(z)  # shape: [bs, c/2, 1, 1]
+            # z = self.Relu(z)
+            # z = self.Conv_Excitation(z)  # shape: [bs, c, 1, 1]
             ca = getattr(self, f"channel_attention")(v).reshape(-1, 1, 1)
-            z = z * ca
-        z = self.norm_c(z)
+            # z = z * ca
+            z = self.norm_c(ca)
         if 'sSE' in self.mode:
-            q = self.Conv1x1(U)  # U:[bs,c,h,w] to q:[bs,1,h,w]
+            # q = self.Conv1x1(U)  # U:[bs,c,h,w] to q:[bs,1,h,w]
             sa = getattr(self, f"sptial_attention")(v).reshape(U.shape[-1], U.shape[-2])
-            q = q * sa
-            q = self.norm_s(q)
+            # q = q * sa
+            q = self.norm_s(sa)
         if self.mode == ['sSE', 'cSE']:
             return U * z.expand_as(U) + U * q
         elif 'cSE' in self.mode:
@@ -69,10 +70,7 @@ class yoto_block(nn.Module):
         self.pre = None
         self.ray_mlp = nn.Sequential(
             nn.Linear(2, 30),
-            nn.ReLU(inplace=True),
-            nn.Linear(30, 30),
-            nn.ReLU(inplace=True),
-            nn.Linear(30, 30)
+            nn.ReLU(inplace=True)
         )
         setattr(self, f"channel", nn.Linear(30, in_channels))
         setattr(self, f"bias", nn.Linear(30, in_channels))
@@ -81,7 +79,6 @@ class yoto_block(nn.Module):
         self.pre = preference_vector
 
     def forward(self, U):
-
         v = self.ray_mlp(self.pre)
         weight = getattr(self, f'channel')(v).reshape(-1, 1, 1)
         bias = getattr(self, f'bias')(v).reshape(-1, 1, 1)

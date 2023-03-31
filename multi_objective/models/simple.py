@@ -1,6 +1,6 @@
 import torch.nn as nn
 from .resnet.attention import scSE, yoto_block
-
+import multi_objective.globalvar as gl
 
 class MultiLeNet(nn.Module):
 
@@ -48,14 +48,14 @@ class MultiLeNet_attention(nn.Module):
         self.share3 = nn.Sequential(
             nn.Flatten(),
             nn.Linear(720 , 50),
-            nn.ReLU(),
+            nn.ReLU()
         )
         self.private_left = nn.Linear(50, 10)
         self.private_right = nn.Linear(50, 10)
 
-    def forward(self, batch, preference):
-        self.scse1.preference(preference)
-        self.scse2.preference(preference)
+    def forward(self, batch):
+        self.scse1.preference(gl.get_value('preference'))
+        self.scse2.preference(gl.get_value('preference'))
         x = batch['data']
         x = self.shared1(x)
         x = self.scse1(x)
@@ -93,9 +93,9 @@ class MultiLeNet_yoto(nn.Module):
         self.private_left = nn.Linear(50, 10)
         self.private_right = nn.Linear(50, 10)
 
-    def forward(self, batch, preference):
-        self.yoto1.preference(preference)
-        self.yoto2.preference(preference)
+    def forward(self, batch):
+        self.yoto1.preference(gl.get_value('preference'))
+        self.yoto2.preference(gl.get_value('preference'))
         x = batch['data']
         x = self.shared1(x)
         x = self.yoto1(x)

@@ -114,9 +114,9 @@ def _resnet(
         # remove bn params
         state_dict = {k:v for k, v in state_dict.items() if 'bn' not in k and 'downsample.1' not in k}
         model.load_state_dict(state_dict, strict=False)
-        for name, para in model.named_parameters():
-            if 'scse' not in name:
-                para.requires_grad = False
+        # for name, para in model.named_parameters():
+        #     if 'scse' not in name:
+        #         para.requires_grad = False
         print(summary(model))
     return model
 
